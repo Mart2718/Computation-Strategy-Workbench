@@ -16,6 +16,7 @@ import {
   Info,
   ChevronLeft
 } from 'lucide-react';
+import { InlineMath } from 'react-katex';
 
 // --- Types ---
 
@@ -32,7 +33,7 @@ interface Problem {
 
 interface Step {
   label: string;
-  description: string;
+  description: React.ReactNode;
   action: () => void;
   isCompleted: boolean;
   visualization?: React.ReactNode;
@@ -74,6 +75,116 @@ const PROBLEMS: Problem[] = [
 ];
 
 // --- Components ---
+
+const InstructorGuide = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const videoId = "0U1VS61uKyA"; 
+  const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&rel=0`;
+  const [iframeSrc, setIframeSrc] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setIframeSrc(embedUrl);
+    } else {
+      setIframeSrc("");
+    }
+  }, [isOpen, embedUrl]);
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="mb-4 w-[90vw] max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden"
+            aria-expanded={isOpen}
+          >
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-indigo-600 text-white shadow-md">
+              <div className="flex items-center gap-2">
+                <Brain className="w-5 h-5" />
+                <span className="font-bold">Instructor Guide</span>
+              </div>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                aria-label="Close Guide"
+              >
+                <ChevronRight className="w-5 h-5 rotate-90" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 shadow-inner ring-1 ring-slate-200">
+                {iframeSrc && (
+                  <iframe
+                    src={iframeSrc}
+                    title="Instructor Video: Mental Math Strategies"
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+              
+              <div className="bg-indigo-50 rounded-2xl p-4 border border-indigo-100 shadow-sm">
+                <div className="flex items-center gap-2 text-indigo-700 font-bold mb-2">
+                  <Lightbulb className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm">Check Your Thinking</span>
+                </div>
+                <div className="text-sm text-slate-700 leading-relaxed italic">
+                  "How does Howie's approach to the <InlineMath math={"38 + 97"} /> problem compare to the 'Compensation' strategy we have here? Which one feels more intuitive for a 2nd grader?"
+                </div>
+              </div>
+
+              <div className="text-[10px] text-slate-400 text-center uppercase tracking-widest font-semibold flex items-center justify-center gap-2">
+                <div className="h-px w-8 bg-slate-200"></div>
+                Pedagogical Reflection
+                <div className="h-px w-8 bg-slate-200"></div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${
+          isOpen ? 'bg-slate-800 text-white' : 'bg-indigo-600 text-white ring-4 ring-indigo-100'
+        }`}
+        aria-label={isOpen ? "Close Instructor Guide" : "Open Instructor Guide"}
+        id="instructor-guide-toggle"
+      >
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.div
+              key="close"
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+            >
+              <ChevronRight className="w-6 h-6 rotate-90" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="video"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              className="relative"
+            >
+              <Lightbulb className="w-6 h-6" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
+    </div>
+  );
+};
 
 const NumberLine = ({ start, jumps, targetResult, operator }: { start: number, jumps: { value: number, label: string }[], targetResult: number, operator: '+' | '-' }) => {
   const minVal = Math.min(start, targetResult) - 10;
@@ -186,19 +297,31 @@ export default function App() {
           return [
             {
               label: 'Add the tens',
-              description: `Focus on the tens place: ${aTens} + ${bTens} = ${aTens + bTens}`,
+              description: (
+                <span>
+                  Focus on the tens place: <InlineMath math={`${aTens} + ${bTens} = ${aTens + bTens}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[0] || false
             },
             {
               label: 'Add the ones',
-              description: `Now the ones place: ${aOnes} + ${bOnes} = ${aOnes + bOnes}`,
+              description: (
+                <span>
+                  Now the ones place: <InlineMath math={`${aOnes} + ${bOnes} = ${aOnes + bOnes}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[1] || false
             },
             {
               label: 'Combine',
-              description: `Add the partial sums: ${aTens + bTens} + ${aOnes + bOnes} = ${problem.targetResult}`,
+              description: (
+                <span>
+                  Add the partial sums: <InlineMath math={`${aTens + bTens} + ${aOnes + bOnes} = ${problem.targetResult}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[2] || false
             }
@@ -211,19 +334,31 @@ export default function App() {
           return [
             {
               label: 'Subtract the tens',
-              description: `Focus on the tens: ${aTens} - ${bTens} = ${aTens - bTens}`,
+              description: (
+                <span>
+                  Focus on the tens: <InlineMath math={`${aTens} - ${bTens} = ${aTens - bTens}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[0] || false
             },
             {
               label: 'Subtract the ones',
-              description: `Now the ones: ${aOnes} - ${bOnes} = ${aOnes - bOnes}`,
+              description: (
+                <span>
+                  Now the ones: <InlineMath math={`${aOnes} - ${bOnes} = ${aOnes - bOnes}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[1] || false
             },
             {
               label: 'Adjust Result',
-              description: `Combine the parts: ${aTens - bTens} + (${aOnes - bOnes}) = ${problem.targetResult}`,
+              description: (
+                <span>
+                  Combine the parts: <InlineMath math={`${aTens - bTens} + (${aOnes - bOnes}) = ${problem.targetResult}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[2] || false
             }
@@ -237,13 +372,21 @@ export default function App() {
         return [
           {
             label: 'Break apart the second number',
-            description: `Break ${problem.b} into ${bTens} and ${bOnes}. We'll bridge the 3 gaps.`,
+            description: (
+              <span>
+                Break <InlineMath math={problem.b.toString()} /> into <InlineMath math={bTens.toString()} /> and <InlineMath math={bOnes.toString()} />. We'll bridge the 3 gaps.
+              </span>
+            ),
             action: () => {},
             isCompleted: completedSteps[0] || false
           },
           {
             label: 'Bridge the Tens',
-            description: `Start at ${problem.a} and jump ${problem.operator}${bTens}.`,
+            description: (
+              <span>
+                Start at <InlineMath math={problem.a.toString()} /> and jump <InlineMath math={`${problem.operator}${bTens}`} />.
+              </span>
+            ),
             action: () => {},
             isCompleted: completedSteps[1] || false,
             visualization: (
@@ -257,7 +400,11 @@ export default function App() {
           },
           {
             label: 'Bridge the Ones',
-            description: `From there, jump the remaining ${problem.operator}${bOnes}.`,
+            description: (
+              <span>
+                From there, jump the remaining <InlineMath math={`${problem.operator}${bOnes}`} />.
+              </span>
+            ),
             action: () => {},
             isCompleted: completedSteps[2] || false,
              visualization: (
@@ -283,19 +430,31 @@ export default function App() {
           return [
             {
               label: 'Round to Friendly Number',
-              description: `${problem.b} is very close to ${nextTen}. Let's add ${nextTen} instead.`,
+              description: (
+                <span>
+                  <InlineMath math={problem.b.toString()} /> is very close to <InlineMath math={nextTen.toString()} />. Let's add <InlineMath math={nextTen.toString()} /> instead.
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[0] || false
             },
             {
               label: 'Calculate with Friendly Number',
-              description: `${problem.a} + ${nextTen} = ${problem.a + nextTen}`,
+              description: (
+                <span>
+                  <InlineMath math={`${problem.a} + ${nextTen} = ${problem.a + nextTen}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[1] || false
             },
             {
               label: 'Compensate',
-              description: `We added ${diff} too many. Subtract ${diff} to find the final answer: ${problem.a + nextTen} - ${diff} = ${problem.targetResult}`,
+              description: (
+                <span>
+                  We added <InlineMath math={diff.toString()} /> too many. Subtract <InlineMath math={diff.toString()} /> to find the final answer: <InlineMath math={`${problem.a + nextTen} - ${diff} = ${problem.targetResult}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[2] || false
             }
@@ -305,19 +464,31 @@ export default function App() {
           return [
             {
               label: 'Round up to Friendly Number',
-              description: `${problem.b} is close to ${nextTen}. Let's add ${diff} to it to get ${nextTen}.`,
+              description: (
+                <span>
+                  <InlineMath math={problem.b.toString()} /> is close to <InlineMath math={nextTen.toString()} />. Let's add <InlineMath math={diff.toString()} /> to it to get <InlineMath math={nextTen.toString()} />.
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[0] || false
             },
             {
               label: 'Equal Addition',
-              description: `To keep the difference the same, we must also add ${diff} to ${problem.a}. ${problem.a} + ${diff} = ${problem.a + diff}`,
+              description: (
+                <span>
+                  To keep the difference the same, we must also add <InlineMath math={diff.toString()} /> to <InlineMath math={problem.a.toString()} />. <InlineMath math={`${problem.a} + ${diff} = ${problem.a + diff}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[1] || false
             },
             {
               label: 'New Problem',
-              description: `Now solve the easier problem: ${problem.a + diff} - ${nextTen} = ${problem.targetResult}`,
+              description: (
+                <span>
+                  Now solve the easier problem: <InlineMath math={`${problem.a + diff} - ${nextTen} = ${problem.targetResult}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[2] || false
             }
@@ -335,19 +506,31 @@ export default function App() {
           return [
             {
               label: 'Identify Friendly Number',
-              description: `${problem.a} is close to ${nextTenVal}. It needs ${needs} to get there.`,
+              description: (
+                <span>
+                  <InlineMath math={problem.a.toString()} /> is close to <InlineMath math={nextTenVal.toString()} />. It needs <InlineMath math={needs.toString()} /> to get there.
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[0] || false
             },
             {
               label: 'Decompose',
-              description: `Break ${problem.b} into ${needs} and ${rest}.`,
+              description: (
+                <span>
+                  Break <InlineMath math={problem.b.toString()} /> into <InlineMath math={needs.toString()} /> and <InlineMath math={rest.toString()} />.
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[1] || false
             },
             {
               label: 'Friendly Sum',
-              description: `${problem.a} + ${needs} = ${nextTenVal}. Now add the rest: ${nextTenVal} + ${rest} = ${problem.targetResult}`,
+              description: (
+                <span>
+                  <InlineMath math={`${problem.a} + ${needs} = ${nextTenVal}`} />. Now add the rest: <InlineMath math={`${nextTenVal} + ${rest} = ${problem.targetResult}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[2] || false,
               visualization: (
@@ -369,19 +552,31 @@ export default function App() {
           return [
             {
               label: 'Identify Friendly Number',
-              description: `Let's get ${problem.a} down to ${prevTenVal}. We need to take away ${takes}.`,
+              description: (
+                <span>
+                  Let's get <InlineMath math={problem.a.toString()} /> down to <InlineMath math={prevTenVal.toString()} />. We need to take away <InlineMath math={takes.toString()} />.
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[0] || false
             },
             {
               label: 'Decompose',
-              description: `Break the total subtrahend ${problem.b} into ${takes} and ${rest}.`,
+              description: (
+                <span>
+                  Break the total subtrahend <InlineMath math={problem.b.toString()} /> into <InlineMath math={takes.toString()} /> and <InlineMath math={rest.toString()} />.
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[1] || false
             },
             {
               label: 'Friendly Difference',
-              description: `${problem.a} - ${takes} = ${prevTenVal}. Now subtract the rest: ${prevTenVal} - ${rest} = ${problem.targetResult}`,
+              description: (
+                <span>
+                  <InlineMath math={`${problem.a} - ${takes} = ${prevTenVal}`} />. Now subtract the rest: <InlineMath math={`${prevTenVal} - ${rest} = ${problem.targetResult}`} />
+                </span>
+              ),
               action: () => {},
               isCompleted: completedSteps[2] || false,
               visualization: (
@@ -456,10 +651,8 @@ export default function App() {
           <span className="bg-indigo-50 text-indigo-700 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-6">
             Current Problem
           </span>
-          <div className="text-7xl md:text-8xl font-black text-slate-800 tracking-tighter flex items-center gap-4">
-            <span>{problem.a}</span>
-            <span className="text-indigo-600/30">{problem.operator}</span>
-            <span>{problem.b}</span>
+          <div className="text-7xl md:text-8xl font-black text-slate-800 tracking-tight flex items-center gap-4">
+            <InlineMath math={`${problem.a} ${problem.operator} ${problem.b}`} />
           </div>
           
           <div className="mt-8 flex flex-wrap justify-center gap-2">
@@ -678,6 +871,7 @@ export default function App() {
            </p>
         </footer>
       </div>
+      <InstructorGuide />
     </div>
   );
 }
