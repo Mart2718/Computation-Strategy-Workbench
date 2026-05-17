@@ -1,0 +1,8 @@
+{
+  "name": "Strategy Workbench: Mental Math Master",
+  "description": "An interactive pedagogical tool for future teachers to master mental math strategies like Compensation, Bridging, and Compatible Numbers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
